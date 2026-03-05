@@ -29,24 +29,26 @@ def BaseballSeams(step, numSeams, B, F = 1):
     
     return Vec3(x,y,z)
 
+def XCircle(j, fullCycle):
+    angle = 2 * math.pi * j / fullCycle
 
-def XCircle(radius=1):
-     x = 2 * random.random() - 1
-     y = 2 * random.random() - 1
-     unitVec = Vec3(x,y,0)
-     unitVec.normalize()
-     return unitVec * radius
+    x = math.cos(angle)
+    y = math.sin(angle)
 
-def YCircle(radius=1):
-     y = 2 * random.random() - 1
-     z = 2 * random.random() - 1
-     unitVec = Vec3(0,y,z)
-     unitVec.normalize()
-     return unitVec * radius
+    return Vec3(x, y, 0)
 
-def ZCircle(radius=1):
-     x = 2 * random.random() - 1
-     z = 2 * random.random() - 1
-     unitVec = Vec3(x,0,z)
-     unitVec.normalize()
-     return unitVec * radius
+def YCircle(j, fullCycle):
+    angle = 2 * math.pi * j / fullCycle
+
+    y = math.cos(angle)
+    z = math.sin(angle)
+
+    return Vec3(0, y, z)
+
+def ZCircle(j, fullCycle):
+    angle = 2 * math.pi * j / fullCycle
+
+    x = math.cos(angle)
+    z = math.sin(angle)
+
+    return Vec3(x, 0, z)
