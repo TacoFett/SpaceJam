@@ -6,6 +6,8 @@ from panda3d.core import CollisionTraverser, CollisionHandlerPusher
 from CollideObjectBase import *
 from Player import Spaceship
 from direct.gui.OnscreenImage import OnscreenImage
+from direct.gui.OnscreenText import OnscreenText
+from panda3d.core import TextNode
 from panda3d.core import TransparencyAttrib
 class MyApp(ShowBase):
     def __init__(self):
@@ -24,7 +26,7 @@ class MyApp(ShowBase):
         self.Planet6 = SpaceJamClasses.Planet(self.loader, "./Assets/Planets/protoPlanet.x", self.render, 'Planet6', "Assets/Planets/Neptune.jpg", (-4022, -5789, -4502), 565)
         self.Planet7 = SpaceJamClasses.Planet(self.loader, "./Assets/Planets/protoPlanet.x", self.render, 'Planet7', "Assets/Planets/Pink Planet.jpg", (2728, -3244, 4692), 615)
         self.SpaceStation1 = SpaceJamClasses.SpaceStation(self.loader, "./Assets/Space Station/SpaceStation1B/spaceStation.egg", self.render, 'Space Station', "Assets/Space Station/SpaceStation1B/SpaceStation1_Dif2.png", (0,6600,0), 95)
-        self.Player = Spaceship(self.loader, self.taskMgr, self.accept, "./Assets/Spaceships/Dumbledore/Dumbledore.egg", self.render, 'Player', "Assets/Spaceships/Dumbledore/spacejet_C.png", (-100,1200,-200), 300)
+        self.Player = Spaceship(self.loader, self.taskMgr, self.accept, self.cTrav, "./Assets/Spaceships/Dumbledore/Dumbledore.egg", self.render, 'Player', "Assets/Spaceships/Dumbledore/spacejet_C.png", (-100,1200,-200), 300, self.UpdateAmmo)
         self.SetCamera()
         self.EnableHUD()
 
@@ -84,11 +86,41 @@ class MyApp(ShowBase):
         self.camera.reparentTo(self.Player.modelNode)
         self.camera.setFluidPos(0, 1, 0)
         self.camera.setHpr(0, 0, 0)
+        self.firstPerson = True
+        self.accept('c', self.SwitchCamera)
+        
 
     def EnableHUD(self):
         self.Hud = OnscreenImage(image="./Assets/Hud/Reticle3b.png", pos=Vec3(0,0,0), scale = 0.1)
         self.Hud.setTransparency(TransparencyAttrib.MAlpha)
-       
+        self.ammoText = OnscreenText(
+            text = "Ammo: 1",
+            pos = (1.6, -0.95),
+            scale = 0.1,
+            fg = (1,1,1,1),
+            align=TextNode.ARight
+        )
+    
+    def UpdateAmmo(self):
+        ammo = self.Player.missilebay
+        if ammo == 0:
+            self.ammoText.setText(f"Reloading...")
+        else:
+            self.ammoText.setText(f"Ammo: {ammo}")
+    
+    def SwitchCamera(self):
+        if self.firstPerson:
+            self.camera.reparentTo(self.Player.modelNode)
+            self.camera.setPos(0, -20, 10)
+            self.camera.lookAt(self.Player.modelNode)
+            self.firstPerson = False
+        else:
+            self.camera.reparentTo(self.Player.modelNode)
+            self.camera.setFluidPos(0, 1, 0)
+            self.camera.setHpr(0, 0, 0)
+            self.firstPerson = True
+
+    
     
 app = MyApp()
 app.run()
