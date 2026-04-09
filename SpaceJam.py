@@ -27,6 +27,15 @@ class MyApp(ShowBase):
         self.Planet7 = SpaceJamClasses.Planet(self.loader, "./Assets/Planets/protoPlanet.x", self.render, 'Planet7', "Assets/Planets/Pink Planet.jpg", (2728, -3244, 4692), 615)
         self.SpaceStation1 = SpaceJamClasses.SpaceStation(self.loader, "./Assets/Space Station/SpaceStation1B/spaceStation.egg", self.render, 'Space Station', "Assets/Space Station/SpaceStation1B/SpaceStation1_Dif2.png", (0,6600,0), 95)
         self.Player = Spaceship(self.loader, self.taskMgr, self.accept, self.cTrav, "./Assets/Spaceships/Dumbledore/Dumbledore.egg", self.render, 'Player', "Assets/Spaceships/Dumbledore/spacejet_C.png", (-100,1200,-200), 300, self.UpdateAmmo)
+        self.Sentinal1 = SpaceJamClasses.Orbiter(self.loader, self.taskMgr, "./Assets/Drone Defender/DroneDefender/DroneDefender.obj", self.render,
+        "Drone", 6.0, "./Assets/Drone Defender/DroneDefender/octotoad1_auv.png", self.Planet4, 900, "MLB", self.Player)
+        self.Sentinal2 = SpaceJamClasses.Orbiter(self.loader, self.taskMgr, "./Assets/Drone Defender/DroneDefender/DroneDefender.obj", self.render,
+        "Drone", 6.0, "./Assets/Drone Defender/DroneDefender/octotoad1_auv.png", self.Planet5, 900, "MLB", self.Player)
+        self.Sentinal3 = SpaceJamClasses.Orbiter(self.loader, self.taskMgr, "./Assets/Drone Defender/DroneDefender/DroneDefender.obj", self.render,
+        "Drone", 6.0, "./Assets/Drone Defender/DroneDefender/octotoad1_auv.png", self.Planet6, 500, "Cloud", self.Player)
+        self.Sentinal4 = SpaceJamClasses.Orbiter(self.loader, self.taskMgr, "./Assets/Drone Defender/DroneDefender/DroneDefender.obj", self.render,
+        "Drone", 6.0, "./Assets/Drone Defender/DroneDefender/octotoad1_auv.png", self.Planet7, 500, "Cloud", self.Player)
+
         self.SetCamera()
         self.EnableHUD()
 
@@ -100,6 +109,19 @@ class MyApp(ShowBase):
             fg = (1,1,1,1),
             align=TextNode.ARight
         )
+
+        self.boostText = OnscreenText(
+            text = "Boost: Ready",
+            pos = (-1.6, -0.95),
+            scale = 0.1,
+            fg = (1,1,1,1),
+            align=TextNode.ALeft
+        )
+
+        self.taskMgr.add(self.UpdateBoostTask, "UpdateBoostHUD")
+    def UpdateBoostTask(self, task):
+        self.UpdateBoost()
+        return task.cont
     
     def UpdateAmmo(self):
         ammo = self.Player.missilebay
@@ -107,6 +129,15 @@ class MyApp(ShowBase):
             self.ammoText.setText(f"Reloading...")
         else:
             self.ammoText.setText(f"Ammo: {ammo}")
+
+    def UpdateBoost(self):
+        boost = self.Player.boostStatus
+        if self.Player.boostStatus == "Boost Used":
+            self.boostText.setText("Boost: Active")
+        elif self.Player.boostStatus == "Boost on Cooldown":
+            self.boostText.setText("Boost on Cooldown")
+        else:
+            self.boostText.setText("Boost Ready")
     
     def SwitchCamera(self):
         if self.firstPerson:

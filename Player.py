@@ -7,6 +7,7 @@ from SpaceJamClasses import Missile
 from panda3d.core import CollisionHandlerEvent
 from direct.interval.LerpInterval import LerpFunc
 from direct.particles.ParticleEffect import ParticleEffect
+from panda3d.core import AudioManager
 import re
 
 class Spaceship(SphereCollideObject):
@@ -30,6 +31,19 @@ class Spaceship(SphereCollideObject):
         self.reloadTime = .25
         self.missleDistance = 4000
         self.missilebay = 1
+        self.missileSfx = loader.loadSfx("./Assets/Sounds/Missile.wav") #by bolkmar
+        self.missileSfx.setVolume(0.7)
+
+
+        self.baseSpeed = 5
+        self.speed = self.baseSpeed
+        self.BoostCooldown = True
+        self.boostStatus = "Ready"
+        self.boostSfx = loader.loadSfx("./Assets/Sounds/Thrust.wav") #by qubodup
+
+        self.Up_DownSfx = loader.loadSfx("./Assets/Sounds/Up-Down.mp3") #by Pixabay
+
+        self.TurnSfx = loader.loadSfx("./Assets/Sounds/Turning.mp3") #by Pixabay
 
         self.updateAmmo = updateAmmoFunc
 
@@ -54,6 +68,7 @@ class Spaceship(SphereCollideObject):
             inFront = aim * 400
             travVec = fireSolution + self.modelNode.getPos()
             self.missilebay -= 1
+            self.missileSfx.play()
             self.updateAmmo()
             tag = 'Missile' + str(Missile.missileCount)
             posVec = self.modelNode.getPos() + inFront
@@ -63,7 +78,6 @@ class Spaceship(SphereCollideObject):
             Missile.Intervals[tag].start()
         else:
             if not self.taskMgr.hasTaskNamed('reload'):
-                print('Starting reload...')
                 self.taskMgr.doMethodLater(0, self.Reload, 'reload')
                 return Task.cont 
 
@@ -71,12 +85,10 @@ class Spaceship(SphereCollideObject):
         if task.time > self.reloadTime:
             self.missilebay += 1
             self.updateAmmo()
-            print('reload complete')
             return Task.done
         if self.missilebay > 1:
             self.missilebay = 1 
         elif  task.time <= self.reloadTime:
-            print('reload proceeding...')
             return Task.cont
     
     def CheckIntervals(self, task):
@@ -132,7 +144,7 @@ class Spaceship(SphereCollideObject):
 
     def ExplodeLight(self, t):
         if t == 1.0 and self.explodeEffect:
-            self.explodeEffect.disable
+            self.explodeEffect.disable()
 
         elif t == 0:
             self.explodeEffect.start(self.explodeNode)
@@ -147,6 +159,7 @@ class Spaceship(SphereCollideObject):
     def SetKeyBindings(self):
         self.accept('w', self.Thrust, [1])
         self.accept('w-up', self.Thrust, [0])
+        self.accept('space', self.StartBoost)
         self.accept('a', self.Left, [1])
         self.accept('a-up', self.Left, [0])
         self.accept('d', self.Right, [1])
@@ -161,7 +174,8 @@ class Spaceship(SphereCollideObject):
         self.accept('1-up', self.Up, [0])
         self.accept('2', self.Down, [1])
         self.accept('2-up', self.Down, [0])
-        self.accept('f', self.Fire) 
+        self.accept('f', self.Fire)
+
         
     def Thrust(self, keyDown): 
         if keyDown: 
@@ -171,9 +185,38 @@ class Spaceship(SphereCollideObject):
     def ApplyThrust(self, task): 
         trajectory = self.render.getRelativeVector(self.modelNode, Vec3.forward())
         trajectory.normalize() 
-        rate = 5 
+        rate = self.speed
         self.modelNode.setFluidPos(self.modelNode.getPos() + trajectory * rate) 
         return Task.cont 
+    
+    def SpeedBoost(self, task):
+        if task.time == 0:
+            self.speed = self.baseSpeed * 2.5
+            self.boostStatus = "Boost Used"
+            self.boostSfx.play()
+           
+        if task.time > 5:
+            self.speed = self.baseSpeed
+            self.boostStatus = "Boost on Cooldown"
+        
+            self.taskMgr.doMethodLater(5, self.ResetBoost, "Boost Cooldown")
+            return Task.done
+        return Task.cont
+    
+    def StartBoost(self):
+        if self.BoostCooldown and not self.taskMgr.hasTaskNamed("SpeedBoost"):
+            self.BoostCooldown = False
+            self.boostStatus = "Boosting"
+          
+            self.taskMgr.add(self.SpeedBoost, "SpeedBoost")
+        else:
+            self.boostStatus = "Boost on Cooldown..."
+            
+    def ResetBoost(self, task):
+        self.BoostCooldown = True
+        self.boostStatus = "Boost Ready"
+     
+        return Task.done
     
     def Reverse(self, keyDown): 
         if keyDown: 
@@ -191,7 +234,8 @@ class Spaceship(SphereCollideObject):
         trajectory = self.modelNode.getRelativeVector(self.modelNode , -Vec3.right())
         trajectory.normalize() 
         rate = 5
-        self.modelNode.setFluidPos(self.modelNode.getPos() + trajectory * rate) 
+        self.modelNode.setFluidPos(self.modelNode.getPos() + trajectory * rate)
+        
         return Task.cont 
     
     def Left(self, keyDown): 
@@ -203,7 +247,8 @@ class Spaceship(SphereCollideObject):
         trajectory = self.modelNode.getRelativeVector(self.modelNode, Vec3.right()) 
         trajectory.normalize() 
         rate = 5
-        self.modelNode.setFluidPos(self.modelNode.getPos() + trajectory * rate) 
+        self.modelNode.setFluidPos(self.modelNode.getPos() + trajectory * rate)
+        
         return Task.cont 
     
     def Right(self, keyDown): 
@@ -214,9 +259,11 @@ class Spaceship(SphereCollideObject):
 
     def LeftTurn(self, keyDown): 
         if keyDown: 
-            self.taskMgr.add(self.ApplyLeftTurn, 'left-turn') 
+            self.taskMgr.add(self.ApplyLeftTurn, 'left-turn')
+            self.TurnSfx.play()
         else: 
-             self.taskMgr.remove('left-turn') 
+             self.taskMgr.remove('left-turn')
+             self.TurnSfx.stop()
 
     def ApplyLeftTurn(self, task): 
         rate = .5 
@@ -225,9 +272,11 @@ class Spaceship(SphereCollideObject):
     
     def RightTurn(self, keyDown): 
         if keyDown: 
-            self.taskMgr.add(self.ApplyRightTurn, 'right-turn') 
+            self.taskMgr.add(self.ApplyRightTurn, 'right-turn')
+            self.TurnSfx.play() 
         else: 
-            self.taskMgr.remove('right-turn') 
+            self.taskMgr.remove('right-turn')
+            self.TurnSfx.stop() 
 
     def ApplyRightTurn(self, task): 
         rate = .5 
@@ -238,26 +287,31 @@ class Spaceship(SphereCollideObject):
         trajectory = self.modelNode.getRelativeVector(self.modelNode, Vec3.up()) 
         trajectory.normalize() 
         rate = 5
-        self.modelNode.setFluidPos(self.modelNode.getPos() + trajectory * rate) 
+        self.modelNode.setFluidPos(self.modelNode.getPos() + trajectory * rate)
         return Task.cont 
     
     def Up(self, keyDown): 
         if keyDown: 
-            self.taskMgr.add(self.ApplyUp, 'up-thrust') 
+            self.taskMgr.add(self.ApplyUp, 'up-thrust')
+            self.Up_DownSfx.play()
         else: 
-            self.taskMgr.remove('up-thrust') 
+            self.taskMgr.remove('up-thrust')
+            self.Up_DownSfx.stop() 
 
     def ApplyDown(self, task): 
         trajectory = self.modelNode.getRelativeVector(self.modelNode, -Vec3.up()) 
         trajectory.normalize() 
         rate = 5 
-        self.modelNode.setFluidPos(self.modelNode.getPos() + trajectory * rate) 
+        self.modelNode.setFluidPos(self.modelNode.getPos() + trajectory * rate)
+        
         return Task.cont 
     
     def Down(self, keyDown): 
         if keyDown: 
-            self.taskMgr.add(self.ApplyDown, 'down-thrust') 
+            self.taskMgr.add(self.ApplyDown, 'down-thrust')
+            self.Up_DownSfx.play() 
         else: 
             self.taskMgr.remove('down-thrust')
+            self.Up_DownSfx.stop()
 
 
