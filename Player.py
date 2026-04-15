@@ -42,6 +42,7 @@ class Spaceship(SphereCollideObject):
         self.boostSfx = loader.loadSfx("./Assets/Sounds/Thrust.wav") #by qubodup
 
         self.Up_DownSfx = loader.loadSfx("./Assets/Sounds/Up-Down.mp3") #by Pixabay
+        self.Up_DownSfx.setVolume(0.2)
 
         self.TurnSfx = loader.loadSfx("./Assets/Sounds/Turning.mp3") #by Pixabay
 

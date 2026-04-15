@@ -23,18 +23,21 @@ class MyApp(ShowBase):
         self.Planet3 = SpaceJamClasses.Planet(self.loader, "./Assets/Planets/protoPlanet.x", self.render, 'Planet3', "Assets/Planets/Earth.jpg", (1932, 1472, -7752), 500)
         self.Planet4 = SpaceJamClasses.Planet(self.loader, "./Assets/Planets/protoPlanet.x", self.render, 'Planet4', "Assets/Planets/Mars.jpg", (2449, 7330, -2852), 285)
         self.Planet5 = SpaceJamClasses.Planet(self.loader, "./Assets/Planets/protoPlanet.x", self.render, 'Planet5', "Assets/Planets/Jupiter.jpg", (5804, 3000, -2000), 800) 
-        self.Planet6 = SpaceJamClasses.Planet(self.loader, "./Assets/Planets/protoPlanet.x", self.render, 'Planet6', "Assets/Planets/Neptune.jpg", (-4022, -5789, -4502), 565)
+        #self.Planet6 = SpaceJamClasses.Planet(self.loader, "./Assets/Planets/protoPlanet.x", self.render, 'Planet6', "Assets/Planets/Neptune.jpg", (-4022, -5789, -4502), 565)
         self.Planet7 = SpaceJamClasses.Planet(self.loader, "./Assets/Planets/protoPlanet.x", self.render, 'Planet7', "Assets/Planets/Pink Planet.jpg", (2728, -3244, 4692), 615)
         self.SpaceStation1 = SpaceJamClasses.SpaceStation(self.loader, "./Assets/Space Station/SpaceStation1B/spaceStation.egg", self.render, 'Space Station', "Assets/Space Station/SpaceStation1B/SpaceStation1_Dif2.png", (0,6600,0), 95)
         self.Player = Spaceship(self.loader, self.taskMgr, self.accept, self.cTrav, "./Assets/Spaceships/Dumbledore/Dumbledore.egg", self.render, 'Player', "Assets/Spaceships/Dumbledore/spacejet_C.png", (-100,1200,-200), 300, self.UpdateAmmo)
         self.Sentinal1 = SpaceJamClasses.Orbiter(self.loader, self.taskMgr, "./Assets/Drone Defender/DroneDefender/DroneDefender.obj", self.render,
-        "Drone", 6.0, "./Assets/Drone Defender/DroneDefender/octotoad1_auv.png", self.Planet4, 900, "MLB", self.Player)
+        "Drone", 10, "./Assets/Drone Defender/DroneDefender/octotoad1_auv.png", self.Planet1, 900, "MLB", self.Player)
         self.Sentinal2 = SpaceJamClasses.Orbiter(self.loader, self.taskMgr, "./Assets/Drone Defender/DroneDefender/DroneDefender.obj", self.render,
-        "Drone", 6.0, "./Assets/Drone Defender/DroneDefender/octotoad1_auv.png", self.Planet5, 900, "MLB", self.Player)
+        "Drone", 10, "./Assets/Drone Defender/DroneDefender/octotoad1_auv.png", self.Planet2, 900, "MLB", self.Player)
         self.Sentinal3 = SpaceJamClasses.Orbiter(self.loader, self.taskMgr, "./Assets/Drone Defender/DroneDefender/DroneDefender.obj", self.render,
-        "Drone", 6.0, "./Assets/Drone Defender/DroneDefender/octotoad1_auv.png", self.Planet6, 500, "Cloud", self.Player)
+        "Drone", 10, "./Assets/Drone Defender/DroneDefender/octotoad1_auv.png", self.Planet4, 500, "Cloud", self.Player)
         self.Sentinal4 = SpaceJamClasses.Orbiter(self.loader, self.taskMgr, "./Assets/Drone Defender/DroneDefender/DroneDefender.obj", self.render,
-        "Drone", 6.0, "./Assets/Drone Defender/DroneDefender/octotoad1_auv.png", self.Planet7, 500, "Cloud", self.Player)
+        "Drone", 10, "./Assets/Drone Defender/DroneDefender/octotoad1_auv.png", self.Planet5, 500, "Cloud", self.Player)
+
+        self.Wanderer1 = SpaceJamClasses.Wanderer(self.loader, "./Assets/Drone Defender/DroneDefender/DroneDefender.obj", self.render, "Drone", 6.0, "./Assets/Drone Defender/DroneDefender/octotoad1_auv.png", self.Player)
+        self.Wanderer2 = SpaceJamClasses.Wanderer(self.loader, "./Assets/Planets/protoPlanet.x", self.render, "Planet", 565, "./Assets/Planets/Neptune.jpg", self.Player)
 
         self.SetCamera()
         self.EnableHUD()
@@ -64,7 +67,7 @@ class MyApp(ShowBase):
         unitVec = defensePaths.Cloud()
         unitVec.normalize()
         position = unitVec * 500 + centralObject.modelNode.getPos()
-        SpaceJamClasses.Drone(self.loader, "./Assets/Drone Defender/DroneDefender/DroneDefender.obj", self.render, droneName, "./Assets/Drone Defender/DroneDefender/octotoad1_auv.png", position, 8)
+        SpaceJamClasses.Drone(self.loader, "./Assets/Drone Defender/DroneDefender/DroneDefender.obj", self.render, droneName, "./Assets/Drone Defender/DroneDefender/octotoad1_auv.png", position, 10)
 
     def DrawXCircle(self, centralObject, droneName, j, fullCycle):
         unitVec = defensePaths.XCircle(j, fullCycle)
